@@ -37,7 +37,7 @@ class GenerateSeparableState(object):
                 if self.space_number > 1:
                     s = self.generate_sub_state()
                     for _ in range(self.space_number - 1):
-                        s = np.reshape(np.einsum('ij,kl->ikjl', s, self.generate_sub_state()),
+                        s = np.reshape(np.kron(s, self.generate_sub_state()),
                                        [s.shape[0] * self.sub_dim, s.shape[1] * self.sub_dim])
                         # Use the np.einsum function to compute the tensor product between component states and then
                         # morph the result into a matrix
@@ -53,6 +53,7 @@ class GenerateSeparableState(object):
                 for k in range(j + 1):
                     mix += weight[k] * state[k]  # Accumulate over the first j + 1 component states
                 self.dataset.append((mix, 0))  # Assign label 0 for separable states
+        # print((np.array(self.dataset[0][0])).shape)
 
 
 class GenerateTwoSeparableState(object):
@@ -82,9 +83,11 @@ class GenerateTwoSeparableState(object):
                 if self.space_number > 1:
                     s = self.generate_sub_state()
                     for _ in range(self.space_number - 1):
-                        s = np.reshape(np.einsum('ij,kl->ikjl', s, self.generate_sub_state()),
-                                       [s.shape[0] * self.sub_dim, s.shape[1] * self.sub_dim])
-                        # Compute the tensor product between component states and then reshape the result into a matrix
+                        db_q1 = np.random.normal(0, 1, [4, 4])
+                        db_q2 = np.random.normal(0, 1, [4, 4])
+                        db_s = db_q1 + 1j * db_q2
+                        s = np.reshape(np.kron(db_s, self.generate_sub_state()),
+                                       [pow(self.sub_dim, self.space_number), pow(self.sub_dim, self.space_number)])
                     state.append(s)
             for j in range(self.mix_number):
                 weight = np.random.random(j + 1)
@@ -152,7 +155,7 @@ class GenerateEntangledState(object):
                 if self.space_number > 1:
                     s = self.generate_sub_state()
                     for _ in range(self.space_number - 1):
-                        s = np.reshape(np.einsum('ij,kl->ikjl', s, self.generate_sub_state()),
+                        s = np.reshape(np.kron(s, self.generate_sub_state()),
                                        [s.shape[0] * self.sub_dim, s.shape[1] * self.sub_dim])
                         # Compute the tensor product between component states and then reshape the result into a matrix
                     state.append(s)
@@ -231,8 +234,8 @@ def dataset_generator(filename, size):
 
 
 if __name__ == '__main__':
-    train_size = 16000
-    test_size = 4000
+    train_size = 160000
+    test_size = 40000
 
     # Generate train datasets
     dataset_generator('qcc_train_set', train_size)
