@@ -1,3 +1,4 @@
+import logging
 import os
 import numpy as np
 
@@ -234,12 +235,19 @@ def dataset_generator(filename, size):
 
 
 if __name__ == '__main__':
-    train_size = 160000
-    test_size = 40000
 
-    # Generate train datasets
-    dataset_generator('qcc_train_set', train_size)
-    # Generate test datasets
-    dataset_generator('qcc_test_set', test_size)
+    try:
+        train_size = 160000
+        test_size = 40000
+        print('Generating dataset...')
+        # Generate train datasets
+        dataset_generator('qcc_train_set', train_size)
+        # Generate test datasets
+        dataset_generator('qcc_test_set', test_size)
 
-    print('Generating data is finished!')
+        print('Generating data is finished!')
+    except KeyboardInterrupt:
+        print("User terminate the program~~")
+    except Exception as e:
+        # Handle any other exceptions
+        logging.error("An error occurred: %s", e)
