@@ -52,7 +52,7 @@ class GenerateSeparableState(object):
                 # The following loop then accumulates over the first j + 1 component states
                 for k in range(j + 1):
                     mix += weight[k] * state[k]  # Accumulate over the first j + 1 component states
-                self.dataset.append(mix)
+                self.dataset.append((mix, 0))  # Assign label 0 for separable states
 
 
 class GenerateTwoSeparableState(object):
@@ -94,7 +94,7 @@ class GenerateTwoSeparableState(object):
                 for k in range(j + 1):
                     mix += weight[k] * state[k]  # Accumulate over the first j + 1 component states
                 if self.limit_constraints(mix):
-                    self.dataset.append(mix)
+                    self.dataset.append((mix, 1))  # Assign label 1 for two-separable states
 
     def limit_constraints(self, mix):
         rho_11 = mix[0, 0]
@@ -164,7 +164,7 @@ class GenerateEntangledState(object):
                 for k in range(j + 1):
                     mix += weight[k] * state[k]  # Accumulate over the first j + 1 component states
                 if self.limit_constraints(mix):
-                    self.dataset.append(mix)
+                    self.dataset.append((mix, 2))  # Assign label 2 for entangled states
 
     def limit_constraints(self, mix):
         rho_11 = mix[0, 0]
@@ -207,19 +207,27 @@ def dataset_generator(filename, size):
     if len(combined_train_dataset) > size:
         combined_train_dataset = combined_train_dataset[:size]
 
-    set_arr = np.array(combined_train_dataset)
-    print(set_arr.shape)
-    set_shape = list(set_arr.shape)
+    # Extract mixes and labels
+    mixes = [item[0] for item in combined_train_dataset]
+    labels = [item[1] for item in combined_train_dataset]
+
+    # Convert mixes and labels to NumPy arrays
+    mixes_arr = np.array(mixes)
+    labels_arr = np.array(labels)
+
+    # Reshape mixes array to include real and imaginary parts separately
+    set_shape = list(mixes_arr.shape)
     set_shape.append(1)
-    arr_set_r = np.reshape(np.real(set_arr), set_shape)
-    arr_set_i = np.reshape(np.imag(set_arr), set_shape)
+    arr_set_r = np.reshape(np.real(mixes_arr), set_shape)
+    arr_set_i = np.reshape(np.imag(mixes_arr), set_shape)
     arr_set_new = np.concatenate((arr_set_r, arr_set_i), axis=-1)
 
     # Create directory if it doesn't exist
     if not os.path.exists('./dataset/'):
         os.makedirs('./dataset/')
     # Save dataset
-    np.save('./dataset/' + filename + '.npy', arr_set_new)
+    np.save('./dataset/' + filename + '_mixes.npy', arr_set_new)
+    np.save('./dataset/' + filename + '_labels.npy', labels_arr)
 
 
 if __name__ == '__main__':
