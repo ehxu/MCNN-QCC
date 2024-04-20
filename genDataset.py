@@ -192,24 +192,35 @@ class GenerateEntangledState(object):
 
 
 def dataset_generator(filename, size):
+    e_size = size // 3
     # Generate datasets
-    sep_generator = GenerateSeparableState(size=size)
-    two_sep_generator = GenerateTwoSeparableState(size=size)
-    entangled_generator = GenerateEntangledState(size=size)
+    sep_gen = GenerateSeparableState(size=e_size)
+    two_sep_gen = GenerateTwoSeparableState(size=e_size)
+    entangled_gen = GenerateEntangledState(size=e_size)
 
-    sep_generator.generate()
-    two_sep_generator.generate()
-    entangled_generator.generate()
+    # Generate separable dataset
+    while len(sep_gen.dataset) < e_size:
+        sep_gen.generate()
+    sep_ds = sep_gen.dataset[:e_size]
+    print("Generated separable dataset size:", len(sep_ds))
+
+    # Generate two separable dataset
+    while len(two_sep_gen.dataset) < e_size:
+        two_sep_gen.generate()
+    two_sep_ds = two_sep_gen.dataset[:e_size]
+    print("Generated two separable dataset size:", len(two_sep_ds))
+
+    # Generate entangled dataset
+    while len(entangled_gen.dataset) < e_size:
+        entangled_gen.generate()
+    ent_ds = entangled_gen.dataset[:e_size]
+    print("Generated two separable dataset size:", len(ent_ds))
 
     # Combine datasets
-    combined_train_dataset = sep_generator.dataset + two_sep_generator.dataset + entangled_generator.dataset
+    combined_train_dataset = sep_ds + two_sep_ds + ent_ds
 
     # Shuffle combined dataset
     np.random.shuffle(combined_train_dataset)
-
-    # Ensure dataset size
-    if len(combined_train_dataset) > size:
-        combined_train_dataset = combined_train_dataset[:size]
 
     # Extract mixes and labels
     mixes = [item[0] for item in combined_train_dataset]
@@ -232,20 +243,21 @@ def dataset_generator(filename, size):
     # Save dataset
     np.save('./dataset/' + filename + '_mixes.npy', arr_set_new)
     np.save('./dataset/' + filename + '_labels.npy', labels_arr)
+    print(filename + " dataset generation finished.")
 
 
 if __name__ == '__main__':
 
     try:
-        train_size = 160000
-        test_size = 40000
-        print('Generating dataset...')
+        train_size = 48000
+        test_size = 12000
+        print('Generating dataset')
         # Generate train datasets
         dataset_generator('qcc_train_set', train_size)
         # Generate test datasets
         dataset_generator('qcc_test_set', test_size)
 
-        print('Generating data is finished!')
+        print('Generated all dataset.')
     except KeyboardInterrupt:
         print("User terminate the program~~")
     except Exception as e:
