@@ -1,12 +1,78 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import seaborn as sns
+import torch
 from matplotlib import pyplot as plt
 
 
 # model trainer
-def model_trainer():
-    pass
+def model_trainer(num_epochs, train_dataloader, test_dataloader, model, criterion, optimizer):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    model.train()
+
+    # 将每次训练的训练误差和测试误差存储在这两个列表里，后面绘制误差变化折线图用
+    train_losses, test_losses, train_accs, test_accs = [], [], [], []
+
+    print('Start training')
+    for epoch in range(num_epochs):
+        running_loss = 0.0
+        correct_train = 0
+        total_train = 0
+
+        # for inputs, labels in tqdm(train_dataloader, desc=f'Epoch {epoch + 1}/{num_epochs}', leave=False):
+        for inputs, labels in train_dataloader:
+            inputs, labels = inputs.to(device), labels.to(device)
+
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item() * inputs.size(0)
+            _, predicted = outputs.max(1)
+            total_train += labels.size(0)
+            correct_train += predicted.eq(labels).sum().item()
+
+        # 每次学完一遍数据集，都进行以下测试操作
+        model.eval()
+        test_loss = 0.0
+        correct_test = 0
+        total_test = 0
+        with torch.no_grad():
+            # for inputs, labels in tqdm(test_dataloader, desc='Test', leave=False):
+            for inputs, labels in test_dataloader:
+                inputs, labels = inputs.to(device), labels.to(device)
+                outputs = model(inputs)
+                loss = criterion(outputs, labels)
+                test_loss += loss.item() * inputs.size(0)
+                _, predicted = outputs.max(1)
+                total_test += labels.size(0)
+                correct_test += predicted.eq(labels).sum().item()
+
+        train_loss = running_loss / len(train_dataloader.dataset)
+        train_acc = 100. * correct_train / total_train
+        test_loss = test_loss / len(test_dataloader.dataset)
+        test_acc = 100. * correct_test / total_test
+
+        # 恢复Dropout
+        model.train()
+
+        # 将训练误差和测试误差存在两个列表里，后面绘制误差变化折线图用
+        train_losses.append(train_loss)
+        test_losses.append(test_loss)
+        train_accs.append(train_acc)
+        test_accs.append(test_acc)
+
+        print("Epoch: {}/{}  ".format(epoch + 1, num_epochs),
+              "Train Loss: {:.4f}  ".format(train_loss),
+              "Test Loss: {:.4f}  ".format(test_loss),
+              "Model Test Accuracy: {:.3f}%".format(test_acc))
+
+    print('Finished Training')
+
+    return train_losses, test_losses, train_accs, test_accs
 
 
 # Training and Test Loss
