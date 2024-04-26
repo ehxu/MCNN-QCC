@@ -15,6 +15,7 @@ def model_trainer(num_epochs, train_dataloader, test_dataloader, model, criterio
     train_losses, test_losses, train_accs, test_accs = [], [], [], []
 
     print('Start training')
+    print('Epoch\tTrain Loss\tTest Loss\tTest Accuracy/%')
     for epoch in range(num_epochs):
         running_loss = 0.0
         correct_train = 0
@@ -65,14 +66,61 @@ def model_trainer(num_epochs, train_dataloader, test_dataloader, model, criterio
         train_accs.append(train_acc)
         test_accs.append(test_acc)
 
-        print("Epoch: {}/{}  ".format(epoch + 1, num_epochs),
-              "Train Loss: {:.4f}  ".format(train_loss),
-              "Test Loss: {:.4f}  ".format(test_loss),
-              "Model Test Accuracy: {:.3f}%".format(test_acc))
+        print("{}\t".format(epoch + 1),
+              "{:.4f}\t".format(train_loss),
+              "{:.4f}\t".format(test_loss),
+              "{:.3f}".format(test_acc))
 
     print('Finished Training')
 
     return train_losses, test_losses, train_accs, test_accs
+
+
+def model_tester(test_dataloader, model):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+
+    # 初始化混淆矩阵和类别分类列表
+    label_dic = {0: 'separable states', 1: 'two-separable states', 2: 'entangled states'}
+    num_classes = len(label_dic)
+    conf_matrix = np.zeros((num_classes, num_classes))
+    class_correct = list(0. for i in range(num_classes))
+    class_total = list(0. for i in range(num_classes))
+
+    # 将模型设置为评估模式
+    model.eval()
+
+    # 在测试集上进行测试
+    with torch.no_grad():
+        for inputs, labels in test_dataloader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            _, predicted = torch.max(outputs, 1)
+            c = (predicted == labels).squeeze()
+
+            for i in range(len(labels)):
+                label = labels[i]
+                prediction = predicted[i]
+                conf_matrix[label][prediction] += 1
+                class_correct[label] += c[i].item()
+                class_total[label] += 1
+
+    # 计算混淆矩阵的百分比
+    conf_matrix_percent = conf_matrix / np.sum(conf_matrix, axis=1, keepdims=True)
+
+    # 计算每个类别的准确率
+    class_accuracy = [100 * class_correct[i] / class_total[i] if class_total[i] > 0 else 0 for i in
+                      range(num_classes)]
+
+    # 计算精确率、召回率和 F1 值
+    precision = [conf_matrix[i][i] / np.sum(conf_matrix[:, i]) if np.sum(conf_matrix[:, i]) > 0 else 0 for i in
+                 range(num_classes)]
+    recall = [conf_matrix[i][i] / np.sum(conf_matrix[i, :]) if np.sum(conf_matrix[i, :]) > 0 else 0 for i in
+              range(num_classes)]
+    f1 = [2 * precision[i] * recall[i] / (precision[i] + recall[i]) if precision[i] + recall[i] > 0 else 0 for i in
+          range(num_classes)]
+
+    return conf_matrix_percent, class_accuracy, precision, recall, f1
 
 
 # Training and Test Loss
@@ -81,7 +129,7 @@ def draw_loss(train_losses, test_losses):
     epochs = range(1, len(train_losses) + 1)
 
     # 绘制训练误差和测试误差随学习次数增加的变化曲线
-    # plt.figure(figsize=(10, 5))
+    plt.figure(figsize=(5, 4))
     plt.plot(epochs, train_losses, label='Train Loss', color='blue', marker='o')
     plt.plot(epochs, test_losses, label='Test Loss', color='orange', marker='s')
 
@@ -102,7 +150,7 @@ def draw_loss(train_losses, test_losses):
 def draw_acc(train_accs, test_accs):
     # 训练次数
     epochs = range(1, len(train_accs) + 1)
-
+    plt.figure(figsize=(5, 4))
     # 绘制准确率曲线图
     plt.plot(epochs, train_accs, label='Train Accuracy', color='blue')
     plt.plot(epochs, test_accs, label='Test Accuracy', color='orange')
@@ -121,7 +169,7 @@ def draw_acc(train_accs, test_accs):
 # Confusion Matrix
 def draw_confusion(conf_matrix_percent, label_dic):
     # 绘制混淆矩阵
-    plt.figure(figsize=(10, 8))
+    plt.figure(figsize=(5, 4))
     sns.heatmap(conf_matrix_percent, annot=False, cmap='Purples', fmt=".2f", xticklabels=label_dic.values(),
                 yticklabels=label_dic.values())
     plt.xlabel('Predicted Label')
@@ -132,7 +180,7 @@ def draw_confusion(conf_matrix_percent, label_dic):
 
 # Classification accuracy
 def draw_class_acc(class_accuracy, label_dic):
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(5, 4))
     bars = plt.bar(label_dic.values(), class_accuracy, color='skyblue')
 
     # 在每个条形上方添加文本标签
@@ -153,7 +201,7 @@ def draw_prf1(precision, recall, f1, label_dic):
     # 绘制精确率、召回率和 F1 值的条形图
     x = np.arange(len(label_dic))
     width = 0.2
-    label_dic = {0: 'separable states', 1: 'two-separable states', 2: 'entangled states'}
+    # label_dic = {0: 'separable states', 1: 'two-separable states', 2: 'entangled states'}
     fig, ax = plt.subplots(figsize=(10, 6))
     bars_precision = ax.bar(x - width, precision, width, label='Precision')
     bars_recall = ax.bar(x, recall, width, label='Recall')
