@@ -187,7 +187,7 @@ def dataset_generator(filename, size):
     while len(entangled_gen.dataset) < e_size:
         entangled_gen.generate()
     ent_ds = entangled_gen.dataset[:e_size]
-    print("Generated two separable dataset size:", len(ent_ds))
+    print("Generated ent separable dataset size:", len(ent_ds))
 
     # Combine datasets
     combined_train_dataset = sep_ds + two_sep_ds + ent_ds
