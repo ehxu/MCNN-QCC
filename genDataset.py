@@ -71,8 +71,8 @@ class GenerateTwoSeparableState(object):
 
     def generate_sub_state(self):
         # Generate a random matrix that follows a normal distribution.
-        q1 = np.random.normal(0, 1, [self.sub_dim, self.sub_dim])
-        q2 = np.random.normal(0, 1, [self.sub_dim, self.sub_dim])
+        q1 = np.random.rand(self.sub_dim, self.sub_dim)
+        q2 = np.random.rand(self.sub_dim, self.sub_dim)
         q = q1 + 1j * q2  # Complex matrix creation
         q = np.matrix(q)  # Convert to matrix
         q = (q + q.H) / 2  # Generate GUE
