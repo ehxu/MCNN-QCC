@@ -112,22 +112,19 @@ class GenerateTwoSeparableState(object):
         rho_55 = mix[4, 4]
         rho_66 = mix[5, 5]
         rho_77 = mix[6, 6]
-        rho_88 = mix[7, 7]
-        rho_12 = mix[0, 1]
+        rho_18 = mix[0, 7]
+        rho_23 = mix[1, 2]
         rho_25 = mix[1, 4]
         rho_35 = mix[2, 4]
 
-        if abs(rho_12) > np.sqrt(rho_11 * rho_44):
-            return True
-        elif abs(rho_25) > np.sqrt(rho_11 * rho_66):
-            return True
-        elif abs(rho_35) > np.sqrt(rho_11 * rho_77):
-            return True
-        elif abs(rho_88) > np.sqrt(rho_22 * rho_77):
-            return True
-        elif abs(rho_88) > np.sqrt(rho_33 * rho_66):
-            return True
-        elif abs(rho_88) > np.sqrt(rho_44 * rho_55):
+        eq1 = (np.abs(rho_23) > np.sqrt(rho_11 * rho_44))
+        eq2 = (np.abs(rho_25) > np.sqrt(rho_11 * rho_66))
+        eq3 = (np.abs(rho_35) > np.sqrt(rho_11 * rho_77))
+        eq4 = (np.abs(rho_18) > np.sqrt(rho_22 * rho_77))
+        eq5 = (np.abs(rho_18) > np.sqrt(rho_33 * rho_66))
+        eq6 = (np.abs(rho_18) > np.sqrt(rho_44 * rho_55))
+
+        if eq1 or eq2 or eq3 or eq4 or eq5 or eq6:
             return True
         else:
             return False
