@@ -222,8 +222,8 @@ def dataset_generator(filename, size):
 if __name__ == '__main__':
 
     try:
-        train_size = 48000
-        test_size = 12000
+        train_size = 9600
+        test_size = 2400
         print('Generating dataset')
         # Generate train datasets
         dataset_generator('qcc_train_set', train_size)
