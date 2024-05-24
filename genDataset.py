@@ -152,7 +152,7 @@ class GenerateEntangledState(object):
         rho_35 = mix[2, 4]
 
         constraint1_l = np.abs(rho_23) + np.abs(rho_25) + np.abs(rho_35)
-        constraint1_r = 0.5 * (3 * rho_11 + rho_44 + rho_66 + rho_77)
+        constraint1_r = 0.5 * (2 * rho_11 + rho_44 + rho_66 + rho_77)
         constraint2_l = np.abs(rho_18)
         constraint2_r = np.sqrt(rho_22 * rho_77) + np.sqrt(rho_33 * rho_66) + np.sqrt(rho_44 * rho_55)
         constraint1 = (constraint1_l > constraint1_r)
@@ -175,19 +175,19 @@ def dataset_generator(filename, size):
     while len(sep_gen.dataset) < e_size:
         sep_gen.generate()
     sep_ds = sep_gen.dataset[:e_size]
-    print("Generated separable dataset size:", len(sep_ds))
+    print("Generated fully-separable dataset size:", len(sep_ds))
 
     # Generate two separable dataset
     while len(two_sep_gen.dataset) < e_size:
         two_sep_gen.generate()
     two_sep_ds = two_sep_gen.dataset[:e_size]
-    print("Generated two separable dataset size:", len(two_sep_ds))
+    print("Generated two-separable dataset size:", len(two_sep_ds))
 
     # Generate entangled dataset
     while len(entangled_gen.dataset) < e_size:
         entangled_gen.generate()
     ent_ds = entangled_gen.dataset[:e_size]
-    print("Generated ent separable dataset size:", len(ent_ds))
+    print("Generated entangled dataset size:", len(ent_ds))
 
     # Combine datasets
     combined_train_dataset = sep_ds + two_sep_ds + ent_ds
