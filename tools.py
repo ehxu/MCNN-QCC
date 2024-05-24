@@ -81,7 +81,7 @@ def model_tester(test_dataloader, model):
     model.to(device)
 
     # 初始化混淆矩阵和类别分类列表
-    label_dic = {0: 'separable states', 1: 'two-separable states', 2: 'entangled states'}
+    label_dic = {0: 'fully-separable states', 1: 'two-separable states', 2: 'entangled states'}
     num_classes = len(label_dic)
     conf_matrix = np.zeros((num_classes, num_classes))
     class_correct = list(0. for i in range(num_classes))
@@ -201,7 +201,7 @@ def draw_prf1(precision, recall, f1, label_dic):
     # 绘制精确率、召回率和 F1 值的条形图
     x = np.arange(len(label_dic))
     width = 0.2
-    # label_dic = {0: 'separable states', 1: 'two-separable states', 2: 'entangled states'}
+    # label_dic = {0: 'fully-separable states', 1: 'two-separable states', 2: 'entangled states'}
     fig, ax = plt.subplots(figsize=(10, 6))
     bars_precision = ax.bar(x - width, precision, width, label='Precision')
     bars_recall = ax.bar(x, recall, width, label='Recall')
