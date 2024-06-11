@@ -152,7 +152,7 @@ class GenerateEntangledState(object):
         rho_35 = mix[2, 4]
 
         constraint1_l = np.abs(rho_23) + np.abs(rho_25) + np.abs(rho_35)
-        constraint1_r = 0.5 * (2 * rho_11 + rho_44 + rho_66 + rho_77)
+        constraint1_r = 0.5 * (2 * rho_11 + rho_44 + rho_66 + rho_77 + rho_22 + rho_33 + rho_55)
         constraint2_l = np.abs(rho_18)
         constraint2_r = np.sqrt(rho_22 * rho_77) + np.sqrt(rho_33 * rho_66) + np.sqrt(rho_44 * rho_55)
         constraint1 = (constraint1_l > constraint1_r)
